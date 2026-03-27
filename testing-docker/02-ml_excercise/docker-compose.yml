@@ -1,0 +1,25 @@
+services:
+ db:
+  image: postgres:15
+  environment:
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: secret
+    POSTGRES_DB: mydb   #crea DB al primo avvio
+  volumes:
+    - pgdata:/var/lib/database
+  ports:
+    - "5432:5432"
+
+ trainer:
+  build: .
+  depends_on: [db]
+  volumes:
+    - ./model:/workspace/model
+  environment: #variabili ambiente utili per aprire db
+    DB_HOST: db
+    DB_NAME: mydb
+    DB_USER: postgres
+    DB_PASSWORD: secret
+
+volumes:
+  pgdata:

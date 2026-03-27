@@ -1,0 +1,6 @@
+
+- Scrivere un docker-compose.yml con due servizi ( trainer + postgres)
+- Passare variabili d'ambiente al container Python ( environment: )
+- Usare depends_on per far partire il trainer solo dopo il DB
+- Usare un volume named per persistere i dati di Postgres
+- Leggere i log con docker compose logs e fermare tutto con docker compose down

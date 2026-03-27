@@ -1,0 +1,5 @@
+Obiettivi esercizio 01:
+- Scrivere un Dockerfile da un'immagine Python base
+- Installare dipendenze (jupyterlab, pandas, matplotlib) via pip
+- Mappare una porta locale per accedere a Jupyter nel browser
+- Montare una cartella locale come volume per persistere i notebook
