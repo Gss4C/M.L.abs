@@ -207,7 +207,7 @@ def _(Categorical, char2int, char_array, model, torch):
             generated_str += str(char_array[last_char])
         return generated_str
     torch.manual_seed(42)
-    print(sample(model, starting_str='un giorno'))
+    print(sample(model, starting_str='un giornale che cadde sulla strada'))
     return
 
 
