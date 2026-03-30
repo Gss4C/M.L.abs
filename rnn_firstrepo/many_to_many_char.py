@@ -19,6 +19,7 @@ class RNN(nn.Module):
         out, (hidden, cell) = self.rnn(out, (hidden, cell))
         out = self.fc(out).reshape(out.size(0), -1)
         return out, hidden, cell
+
     def init_hidden(self, batch_size):
         hidden = torch.zeros(1, batch_size, self.rnn_hidden_size)
         cell = torch.zeros(1, batch_size, self.rnn_hidden_size)
@@ -119,10 +120,11 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.003)
 num_epochs = 500
 torch.manual_seed(42)
 for epoch in range(num_epochs):
+    #va settato model.train()?
     hidden, cell = model.init_hidden(batch_size)
     seq_batch, target_batch = next(iter(seq_dl))
     optimizer.zero_grad()
-    loss = 0
+    loss = 0 #va inizializzata anche accuracy?
     for c in range(seq_length):
         pred, hidden, cell = model(seq_batch[:, c], hidden, cell)
         loss += loss_fn(pred, target_batch[:, c])
