@@ -24,6 +24,7 @@ class RNN(nn.Module):
         self.relu = nn.ReLU()
         self.fc2 = nn.Linear(fc_hidden_size, 1)
         self.sigmoid = nn.Sigmoid()
+        self.dropout = nn.Dropout(0.3)
 
     def forward(self, text, lengths):
         out = self.embedding(text)
@@ -35,6 +36,7 @@ class RNN(nn.Module):
         )
         out, (hidden, cell) = self.rnn(out)
         out = hidden[-1, :, :]
+        out = self.dropout(out)
         out = self.fc1(out)
         out = self.relu(out)
         out = self.fc2(out)
@@ -71,8 +73,8 @@ def train(dataloader):
     total_acc , total_loss = 0,0
 
     for index, (text_batch, label_batch, lengths) in enumerate(dataloader):
-        if index % 5 == 0:
-            print(f'Sono al batch {index} del train')
+        #if index % 5 == 0:
+            #print(f'Sono al batch {index} del train')
         optimizer.zero_grad()
         pred = model(text_batch, lengths)[:,0]
         loss = loss_fn(pred, label_batch.float())
@@ -91,13 +93,15 @@ def evaluate(dataloader):
         for text_batch, label_batch, lengths in dataloader:
             pred = model(text_batch, lengths)[:, 0]
             loss = loss_fn(pred, label_batch.float())
-            total_acc += (
-                (pred>=0.5).float() == label_batch
-            ).float().sum().item()
+            total_acc  += ((pred>=0.5).float() == label_batch).float().sum().item()
             total_loss += loss.item()*label_batch.size(0)
     return total_acc/len(dataloader.dataset), total_loss/len(dataloader.dataset)
 
 def tokenizer(text):
+    '''
+    Data una stringa in input in output mi 
+    dà una lista con ogni parola della stringa
+    '''
     text = re.sub('<[^>]*>', '', text)
     emoticons = re.findall(
         '(?::|;|=)(?:-)?(?:\)|\(|D|P)',
@@ -122,20 +126,38 @@ def collate_batch(batch):
 
     return padded_text_list, label_list, lengths
 
-print('PRE-PROCESSING DEI DATI')
+def split_dataloader(train_dataset, valid_dataset, test_dataset):
+    train_dl = DataLoader(
+        train_dataset, 
+        batch_size = batch_size,
+        shuffle    = True,
+        collate_fn = collate_batch
+    )
+    valid_dl = DataLoader(
+        valid_dataset, 
+        batch_size = batch_size,
+        shuffle    = True,
+        collate_fn = collate_batch
+    )
+    test_dl = DataLoader(
+        test_dataset, 
+        batch_size = batch_size,
+        shuffle    = True,
+        collate_fn = collate_batch
+    )
+    return train_dl, valid_dl, test_dl
+
+print('\n-------------------\nPRE-PROCESSING DEI DATI\n-------------------\n')
+
+dataset_dimension = 3000
+print(f'\nImport del dataset, numero samples: {dataset_dimension}')
 
 dataset = load_dataset("imdb")
-dataset_dimension = 5000
-print(f'Import del dataset, numero samples: {dataset_dimension}')
+
 train_set = dataset["train"].select(range(dataset_dimension))  # max 25.000 esempi
 test_dataset = dataset["test"].select(range(dataset_dimension))    # 25.000 esempi
 
-# Ogni esempio è un dict: {"text": "...", "label": 0 or 1}
-for example in train_set:
-    text  = example["text"]
-    label = example["label"]  # 0 = neg, 1 = pos
-
-manual_seed(1)
+manual_seed(42)
 train_dataset, valid_dataset = random_split(
     list(train_set), 
     [int(0.8*dataset_dimension), int(0.2*dataset_dimension)]
@@ -160,33 +182,12 @@ batch_size = 32
 print(f'Comincio tokenizzazione del dataset e creazione dataloader con batch_size = {batch_size}')
 print(f'Numero totale batch: {int(dataset_dimension/batch_size)}')
 text_pipeline = lambda x: [vocab[token] for token in tokenizer(x)]
-dataloader = DataLoader(train_dataset, batch_size=4, shuffle=False, collate_fn=collate_batch)
 
-#TODO crea funzione create dataloader che contiene sto blocco di monnezza
-train_dl = DataLoader(
-    train_dataset, 
-    batch_size = batch_size,
-    shuffle    = True,
-    collate_fn = collate_batch
-)
-valid_dl = DataLoader(
-    valid_dataset, 
-    batch_size = batch_size,
-    shuffle    = True,
-    collate_fn = collate_batch
-)
-test_dl = DataLoader(
-    test_dataset, 
-    batch_size = batch_size,
-    shuffle    = True,
-    collate_fn = collate_batch
-)
-
+train_dl, valid_dl, test_dl = split_dataloader(train_dataset, valid_dataset, test_dataset)
 vocab_size = len(vocab)
-embed_dim = 20
-rnn_hidden_size = 64
-fc_hidden_size = 64
-torch.manual_seed(1)
+embed_dim = 15
+rnn_hidden_size = 32
+fc_hidden_size = 32
 model = RNN(
     vocab_size, 
     embed_dim,
@@ -199,12 +200,18 @@ optimizer = torch.optim.Adam(
     model.parameters(), 
     lr=0.001
 )
-num_epochs = 2
-torch.manual_seed(1)
+num_epochs = 10
 
-print(f'Inizio del training\nEpoche: {num_epochs}\nEmbed dim: {embed_dim}')
+print(f'\n-------------------\nInizio del training\nEpoche: {num_epochs}\nEmbed dim: {embed_dim}')
 
 for epoch in range(num_epochs):
     acc_train, loss_train = train(train_dl)
     acc_valid, loss_valid = evaluate(valid_dl)
-    print(f'Epoca: {epoch} accuracy: {acc_train:.4f}   -   val_accuracy: {acc_valid:.4f}')
+    print(
+        f'Epoca: {epoch:2d} | '
+        f'train_acc: {acc_train:.4f}  train_loss: {loss_train:.4f} | '
+        f'val_acc: {acc_valid:.4f}  val_loss: {loss_valid:.4f}'
+    )
+
+acc_test, loss_test = evaluate(test_dl)
+print(f'Accuracy test: {acc_test:.4f}   -   Loss test: {loss_test:.4f}')
