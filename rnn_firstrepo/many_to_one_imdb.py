@@ -149,7 +149,7 @@ def split_dataloader(train_dataset, valid_dataset, test_dataset):
 
 print('\n-------------------\nPRE-PROCESSING DEI DATI\n-------------------\n')
 
-dataset_dimension = 3000
+dataset_dimension = 100
 print(f'\nImport del dataset, numero samples: {dataset_dimension}')
 
 dataset = load_dataset("imdb")
@@ -200,7 +200,7 @@ optimizer = torch.optim.Adam(
     model.parameters(), 
     lr=0.001
 )
-num_epochs = 10
+num_epochs = 2
 
 print(f'\n-------------------\nInizio del training\nEpoche: {num_epochs}\nEmbed dim: {embed_dim}')
 
@@ -215,3 +215,6 @@ for epoch in range(num_epochs):
 
 acc_test, loss_test = evaluate(test_dl)
 print(f'Accuracy test: {acc_test:.4f}   -   Loss test: {loss_test:.4f}')
+
+print('--- Training concluso ---\nProcedo a salvare il modello...')
+torch.save(model.state_dict(), "output/IMDB_model.pth")
