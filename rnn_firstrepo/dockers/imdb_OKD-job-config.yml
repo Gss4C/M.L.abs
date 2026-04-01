@@ -1,0 +1,38 @@
+#yaml per training su OKD 
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: rnn-training
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: trainer
+          image: docker.io/jongonns/rnn-imdb-test:latest
+          imagePullPolicy: Always
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            # ─── Cache per dataset HuggingFace ───
+            - name: HF_HOME
+              value: "/app/output/hf_cache"
+            - name: TRANSFORMERS_CACHE
+              value: "/app/output/hf_cache"
+            - name: HF_DATASETS_CACHE
+              value: "/app/output/hf_cache/datasets"
+          resources:
+            requests:
+              memory: "512Mi"   
+              cpu: "250m"       
+            limits:
+              memory: "2Gi"
+              cpu: "1"
+          volumeMounts:
+            - name: ml-output
+              mountPath: /app/output
+      volumes:
+        - name: ml-output
+          persistentVolumeClaim:
+            claimName: ml-output

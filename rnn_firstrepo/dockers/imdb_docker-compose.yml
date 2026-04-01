@@ -1,0 +1,24 @@
+services:
+  trainer:
+    image: rnn-imdb-test:latest   
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    volumes:
+      - ./output/models:/app/output/models   # modelli salvati da train.py
+      - ./output/logs:/app/output/logs       # log con i print di train.py
+
+    environment:
+      - PYTHONUNBUFFERED=1                   # flush immediato dei print
+
+    restart: "no" # non si rilancia in caso di crash
+
+    # ── GPU (decommentare se l'host ha CUDA e nvidia-container-toolkit) ───────
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]

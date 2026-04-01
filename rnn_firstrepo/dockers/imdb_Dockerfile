@@ -1,0 +1,35 @@
+# ── Base image ────────────────────────────────────────────────────────────────
+FROM python:3.12-slim
+
+# ── System deps ───────────────────────────────────────────────────────────────
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        curl \
+        build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# ── Poetry ────────────────────────────────────────────────────────────────────
+ENV POETRY_VERSION=1.8.3 \
+    POETRY_HOME=/opt/poetry \
+    POETRY_VIRTUALENVS_CREATE=false \
+    POETRY_NO_INTERACTION=1
+
+RUN curl -sSL https://install.python-poetry.org | python3 - \
+    && ln -s /opt/poetry/bin/poetry /usr/local/bin/poetry
+
+# ── Workdir ───────────────────────────────────────────────────────────────────
+WORKDIR /app
+
+# ── Install dependencies (layer cached until pyproject/lock changes) ──────────
+COPY pyproject.toml poetry.lock* ./
+RUN poetry install --no-root --only main
+
+# ── Copy source ───────────────────────────────────────────────────────────────
+COPY train.py ./
+
+# ── Runtime directories (overridden by bind-mounts in compose) ────────────────
+RUN mkdir -p /app/output/models /app/output/logs
+
+# ── Entrypoint ────────────────────────────────────────────────────────────────
+# tee duplicates stdout to a timestamped log file AND the terminal stream
+CMD ["sh", "-c", \
+     "python -u train.py 2>&1 | tee /app/output/logs/train_$(date +%Y%m%dT%H%M%S).log"]
