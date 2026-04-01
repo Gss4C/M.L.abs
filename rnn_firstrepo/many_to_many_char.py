@@ -5,6 +5,7 @@ import torch
 from torch.utils.data import Dataset
 from torch.distributions.categorical import Categorical
 from torch.utils.data import DataLoader
+import time
 
 class RNN(nn.Module):
     def __init__(self, vocab_size, embed_dim, rnn_hidden_size):
@@ -117,9 +118,11 @@ loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.003)
 
 # ATTENZIONE: QUESTO TRAIN DURA UN SACCO, > 2MIN/10EPOC
-num_epochs = 500
+num_epochs = 3000
 torch.manual_seed(42)
+epoch_times = []
 for epoch in range(num_epochs):
+    start = time.time() #inizio musurazione tempo esecuzione
     #va settato model.train()?
     hidden, cell = model.init_hidden(batch_size)
     seq_batch, target_batch = next(iter(seq_dl))
@@ -131,8 +134,10 @@ for epoch in range(num_epochs):
     loss.backward()
     optimizer.step()
     loss = loss.item()/seq_length
-    if epoch % 10 == 0:
-        print(f'Epoch {epoch} loss: {loss:.4f}')
+    end = time.time()
+    epoch_times.append(end-start)
+    if epoch % 50 == 0:
+        print(f'Epoch {epoch} loss: {loss:.4f} | Avg exec time: {sum(epoch_times[-50:])/len(epoch_times[-50:])}')
 
 torch.manual_seed(42)
 print(sample(model, starting_str='un giornale che cadde sulla strada'))
