@@ -1,5 +1,4 @@
 import numpy as np
-import marimo as mo
 import torch.nn as nn
 import torch
 from torch.utils.data import Dataset
@@ -87,9 +86,8 @@ elif lang==1:
 
     print(start_indx)
     print(end_indx)
-    print('Total Length (N° caratteri):', len(text))
+    print('Total Length (N° caratteri): ', len(text))
     #print('Unique Characters:', len(char_set))
-
 
 chars_sorted = sorted(char_set) #output dictionary
 char2int = {ch:i for i,ch in enumerate(chars_sorted)}
@@ -106,20 +104,22 @@ text_chunks = [text_encoded[i:i+chunk_size] for i in range(len(text_encoded)-chu
 seq_dataset = TextDataset(torch.tensor(text_chunks))
 
 batch_size = 64
-torch.manual_seed(1)
-seq_dl = DataLoader(seq_dataset, batch_size=batch_size,shuffle=True, drop_last=True)
+torch.manual_seed(42)
+seq_dl = DataLoader(
+    seq_dataset, 
+    batch_size=batch_size,
+    shuffle=True, 
+    drop_last=True
+)
 
 vocab_size = len(char_array)
 embed_dim = 256
 rnn_hidden_size = 512
-torch.manual_seed(1)
 model = RNN(vocab_size, embed_dim, rnn_hidden_size)
 loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.003)
 
-# ATTENZIONE: QUESTO TRAIN DURA UN SACCO, > 2MIN/10EPOC
 num_epochs = 3000
-torch.manual_seed(42)
 epoch_times = []
 for epoch in range(num_epochs):
     start = time.time() #inizio musurazione tempo esecuzione
@@ -127,7 +127,7 @@ for epoch in range(num_epochs):
     hidden, cell = model.init_hidden(batch_size)
     seq_batch, target_batch = next(iter(seq_dl))
     optimizer.zero_grad()
-    loss = 0 #va inizializzata anche accuracy?
+    loss = 0
     for c in range(seq_length):
         pred, hidden, cell = model(seq_batch[:, c], hidden, cell)
         loss += loss_fn(pred, target_batch[:, c])
@@ -137,7 +137,13 @@ for epoch in range(num_epochs):
     end = time.time()
     epoch_times.append(end-start)
     if epoch % 50 == 0:
-        print(f'Epoch {epoch} loss: {loss:.4f} | Avg exec time: {sum(epoch_times[-50:])/len(epoch_times[-50:])}')
+        print(f'Epoch {epoch} loss: {loss:.4f} | Avg exec time: {sum(epoch_times[-50:])/len(epoch_times[-50:]):.4f}')
 
-torch.manual_seed(42)
-print(sample(model, starting_str='un giornale che cadde sulla strada'))
+print('--- Training concluso ---\nProcedo a salvare il modello')
+torch.save(model.state_dict(), "output/models/ch2ch_model.pth")
+print('Salvataggio completo\nAvvio test sample:\n')
+
+print(sample(
+    model, 
+    starting_str='Vediamo un po cosa verrà fuori da questo modello che abbiamo addestrato per'
+))

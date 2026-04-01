@@ -27,7 +27,7 @@ Lanciare i seguenti comandi per caricare du DockerHub l'immagine dopo averla cos
 ```
 docker compose build
 docker compose up
-docker tag rnn-firstrepo:jongonns/rnn-imdb-test:latest
+docker tag rnn-firstrepo jongonns/rnn-imdb-test:latest
 docker push jongonns/rnn-imdb-test:latest
 ```
 
