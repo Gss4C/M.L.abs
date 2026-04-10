@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "transformers test"
+version = "0.1.0"
+description = ""
+authors = ["Jon <jb5nnhy@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.15"
+torch = "^2.11.0"
+numpy = "^2.4.4"
+marimo = "^0.21.1"
+transformers = "^5.5.0"
+pandas = "^3.0.2"
+torchtext = "^0.18.0"
+datasets = "^4.8.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
