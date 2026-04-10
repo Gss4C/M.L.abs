@@ -1,23 +1,29 @@
-#yaml per training su OKD 
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: rnn-training
+  name: rnn-imdb-trainer
+  labels:
+    app: rnn-imdb-trainer
 spec:
   backoffLimit: 0
+  ttlSecondsAfterFinished: 86400
+
   template:
+    metadata:
+      labels:
+        app: rnn-imdb-training
     spec:
       restartPolicy: Never
       containers:
-        - name: trainer
-          image: docker.io/jongonns/rnn-imdb-test:latest
+        - name: rnn-trainer
+          image: docker.io/jongonns/rnn-imdb-test:micro
           imagePullPolicy: Always
           env:
             - name: PYTHONUNBUFFERED
               value: "1"
-            # ─── Cache per dataset HuggingFace ───
             - name: HF_HOME
-              value: "/app/output/hf_cache"
+              value: /app/output/hf-cache
+
             - name: TRANSFORMERS_CACHE
               value: "/app/output/hf_cache"
             - name: HF_DATASETS_CACHE
@@ -30,9 +36,17 @@ spec:
               memory: "2Gi"
               cpu: "1"
           volumeMounts:
-            - name: ml-output
-              mountPath: /app/output
+            - name: rnn-imdb-storage
+              mountPath: /app/output/models
+              subpath: rnn-imdb/models
+            - name: rnn-imdb-storage
+              mountPath: /app/output/logs
+              subpath: rnn-imdb/logs
+            - name: rnn-imdb-storage
+              mountPath: /app/output/hf-cache
+              subPath: rnn-imdb/hf-cache
+
       volumes:
-        - name: ml-output
+        - name: rnn-imdb-storage
           persistentVolumeClaim:
-            claimName: ml-output
+            claimName: j-test

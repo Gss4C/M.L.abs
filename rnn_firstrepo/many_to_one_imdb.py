@@ -8,7 +8,7 @@ from collections import Counter, OrderedDict
 from torch.utils.data import DataLoader
 import torch
 from torch import nn
-import marimo as mo
+import os
 
 class RNN(nn.Module):
     def __init__(self, 
@@ -217,4 +217,5 @@ acc_test, loss_test = evaluate(test_dl)
 print(f'Accuracy test: {acc_test:.4f}   -   Loss test: {loss_test:.4f}')
 
 print('--- Training concluso ---\nProcedo a salvare il modello...')
-torch.save(model.state_dict(), "output/IMDB_model.pth")
+os.makedirs("output/models", exist_ok=True)
+torch.save(model.state_dict(), "output/models/IMDB_model.pth")

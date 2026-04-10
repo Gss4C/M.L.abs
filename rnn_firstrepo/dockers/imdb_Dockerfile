@@ -20,11 +20,11 @@ RUN curl -sSL https://install.python-poetry.org | python3 - \
 WORKDIR /app
 
 # ── Install dependencies (layer cached until pyproject/lock changes) ──────────
-COPY pyproject.toml poetry.lock* ./
+COPY pyproject.toml poetry.lock* .
 RUN poetry install --no-root --only main
 
 # ── Copy source ───────────────────────────────────────────────────────────────
-COPY train.py ./
+COPY train.py .
 
 # ── Runtime directories (overridden by bind-mounts in compose) ────────────────
 RUN mkdir -p /app/output/models /app/output/logs
