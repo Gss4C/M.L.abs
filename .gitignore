@@ -5,5 +5,5 @@
 */poetry.lock
 *output*
 *test.py
-*.csv
+*.csv*
 *.tar.gz
