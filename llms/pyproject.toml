@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "llms"
+version = "0.1.0"
+description = ""
+authors = ["Jon <jb5nnhy@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.15"
+transformers = "^5.5.4"
+marimo = "^0.23.1"
+openai = "^2.32.0"
+langchain = "^1.2.15"
+torch = "^2.11.0"
+groq = "^1.2.0"
+dotenv = "^0.9.9"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
