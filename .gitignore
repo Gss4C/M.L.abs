@@ -1,7 +1,7 @@
 *venv/
 *.venv/
 *.idea/
-*__*
+__*
 */poetry.lock
 *output*
 *test.py
