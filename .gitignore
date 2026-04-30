@@ -8,3 +8,7 @@
 *.csv*
 *.tar.gz
 *.env
+llms/gpt*
+llms/risultati*
+*faiss_index
+*.gradio
