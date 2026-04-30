@@ -1,3 +1,6 @@
+## TEST HUGGING-FACE TRANSFORMERS IN LOCALE ##
+# ========================================== #
+
 from transformers import pipeline
 import logging
 

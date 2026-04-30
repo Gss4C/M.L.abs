@@ -19,11 +19,11 @@ else:
                 {"role": "system", "content": "Sei un robot che risponde sintetico ed essenziale"},#indicazioni al modello
                 {"role": "user","content": "dimmi perché llama 3.3 70b è meglio di gpt5"}
             ],
-            max_tokens = 500,
+            max_tokens  = 500,
             temperature = 0.7 #randomness del modello. 0 è deterministico
         )
 
-        print('Risposta del modello')
+        print('\n--- Risposta del modello ---')
         print(response.choices[0].message.content.strip())
 
     except:
