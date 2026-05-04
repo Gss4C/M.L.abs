@@ -135,7 +135,7 @@ def _(all_similarities, query):
         key=lambda item: item[0], 
         reverse=True
     )
-    print(f"\n--- Risultati della Ricerca Semantica per la query: '{query}' ---")
+    print(f"\n--- Risultati della Ricerca Semantica per la query:  '{query}' ---")
 
     # Definiamo quanti risultati vogliamo mostrare
     num_results_to_show = 3
