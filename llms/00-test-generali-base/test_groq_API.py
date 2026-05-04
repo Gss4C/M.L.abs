@@ -9,13 +9,13 @@ api_key = os.getenv("GROQ_API_KEY")
 if not api_key:
     print('[ERRORE]: API Key not found')
 else:
-    try:
+    try: #Questo metodo è standard per gestire errori o quant'altro quando si usano API Key, va fatto sempre ma lo eviterò in futuro
         os.getenv("GROQ_API_KEY")
         client = Groq()
         print('Invio API-request')
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[
+            model       = "llama-3.3-70b-versatile",
+            messages    = [
                 {"role": "system", "content": "Sei un robot che risponde sintetico ed essenziale"},#indicazioni al modello
                 {"role": "user","content": "dimmi perché llama 3.3 70b è meglio di gpt5"}
             ],
