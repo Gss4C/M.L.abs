@@ -31,14 +31,11 @@ tokenizer.pad_token = tokenizer.eos_token  # Token per padding
 model               = GPT2LMHeadModel.from_pretrained("gpt2")
 print("Modello e tokenizer caricati")
 
-
 print("\n Preparazione dati...")
-# Applichiamo la preparazione a tutti i dati
 train_data = small_train.map(prepare_data, batched=True)
-eval_data  = small_eval.map(prepare_data, batched=True)
-print("✅ Dati preparati!")
+eval_data  = small_eval.map(prepare_data,  batched=True)
+print("Dati preparati.")
 
-# Configuriamo il training del finetuning
 print("\nConfigurazione training...")
 training_args = TrainingArguments(
     output_dir                  = "./risultati", # Dove salvare il modello
@@ -50,7 +47,6 @@ training_args = TrainingArguments(
     save_steps                  = 500,     # Salva ogni 500 step
     eval_steps                  = 100,     # Valuta ogni 100 step
 )
-
 trainer = Trainer(
     model         = model,
     args          = training_args,
@@ -59,8 +55,7 @@ trainer = Trainer(
     processing_class = tokenizer,
 )
 
-print("\nInizio training...")
-
+print("\n=== Inizio training ===")
 trainer.train()
 print("\n=== Training completato ===")
 
@@ -76,7 +71,10 @@ print("Modello salvato in ./gpt2-FTD")
             
 print("\n\n******************************\n******************************\nTest del modello fine-tuned...")
 # Creiamo un generatore di testo
-generator = pipeline("text-generation", model="./gpt2-FTD", tokenizer=tokenizer)
+generator = pipeline(
+    "text-generation", 
+    model     = "./gpt2-FTD",
+    tokenizer = tokenizer)
 
 # Proviamo alcuni prompt
 prompts = [
