@@ -8,6 +8,9 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import ChatHuggingFace, HuggingFaceEmbeddings, HuggingFaceEndpoint
 from langchain_community.vectorstores import FAISS
 
+def format_docs(docs):
+    return "\n\n".join(doc.page_content for doc in docs)
+
 load_dotenv()
 if "HUGGINGFACEHUB_API_TOKEN" not in os.environ or not os.environ["HUGGINGFACEHUB_API_TOKEN"]:
     print("ERRORE: La variabile d'ambiente HUGGINGFACEHUB_API_TOKEN non è stata impostata.")
@@ -31,37 +34,20 @@ text_splitter = RecursiveCharacterTextSplitter(
     chunk_overlap=50,
     length_function=len
 )
-chunks = text_splitter.split_documents(documents)
-print(f"Dati divisi in {len(chunks)} chunk.")
-
-# Creazione del modello di embedding (HuggingFace)
-model_name = "sentence-transformers/all-MiniLM-L6-v2"
+chunks           = text_splitter.split_documents(documents)
+model_name       = "sentence-transformers/all-MiniLM-L6-v2"
 embeddings_model = HuggingFaceEmbeddings(
     model_name   = model_name,
     model_kwargs = {'device': 'cpu'}
 )
 print(f"Modello di embedding '{model_name}' caricato.")
 
-vector_store = FAISS.from_documents(chunks, embeddings_model)
+vector_store    = FAISS.from_documents(chunks, embeddings_model)
 index_file_path = "05-progetto-chatbot/my_faiss_index"
 vector_store.save_local(index_file_path)
 print(f"Indice FAISS salvato localmente in: '{index_file_path}'")
 
-# Test rapido del retriever
-print("\n--- Test del solo Modulo di Recupero ---")
-query_test_retriever = "Come posso resettare la mia password?"
-retriever = vector_store.as_retriever(search_kwargs={"k": 3})
-retrieved_docs = retriever.invoke(query_test_retriever)
-
-print(f"Domanda di test: '{query_test_retriever}'")
-print(f"Trovati {len(retrieved_docs)} chunk rilevanti:")
-for i, doc in enumerate(retrieved_docs):
-    preview = doc.page_content[:80].replace("\n", " ")
-    print(f"  - Chunk {i+1} (Fonte: {doc.metadata['source']}): '{preview}...'")
-
-print("[PARTE 1] -> Modulo di Recupero completato e testato!")
-
-print("\n[PARTE 2] -> Inizio costruzione del modulo di Generazione...")
+print("\nInizio costruzione del modulo di Generazione...")
 template_text = """
 Sei un assistente AI utile e preciso. Rispondi alla domanda dell'utente basandoti ESCLUSIVAMENTE sul contesto fornito.
 Se le informazioni per rispondere non sono nel contesto, dì: "Mi dispiace, non ho trovato informazioni sufficienti per rispondere.".
@@ -80,13 +66,13 @@ print("Prompt Template per RAG creato.")
 
 # Inizializzazione del modello LLM (ChatOpenAI)
 model = HuggingFaceEndpoint(
-    repo_id="moonshotai/Kimi-K2.6",
+    repo_id                  = "moonshotai/Kimi-K2.6",
     huggingfacehub_api_token = os.environ["HUGGINGFACEHUB_API_TOKEN"] ,
-    task="text-generation",
-    max_new_tokens=512,
-    do_sample=False,
-    repetition_penalty=1.03,
-    provider="auto",  
+    task                     = "text-generation",
+    max_new_tokens           = 512,
+    do_sample                = False,
+    repetition_penalty       = 1.03,
+    provider                 = "auto",  
 )
 
 llm = ChatHuggingFace(llm=model)
@@ -100,10 +86,6 @@ loaded_vector_store = FAISS.load_local(
 )
 retriever = loaded_vector_store.as_retriever(search_kwargs={"k": 3})
 
-# Funzione helper per formattare i documenti come stringa di contesto
-def format_docs(docs):
-    return "\n\n".join(doc.page_content for doc in docs)
-
 # Costruzione della catena RAG con LCEL
 rag_chain = (
     {
@@ -115,7 +97,7 @@ rag_chain = (
     | StrOutputParser()
 )
 print("Catena RAG completa creata con LCEL.")
-print("[PARTE 2] -> Modulo di Generazione completato!")
+print("Modulo di Generazione completato!")
 
 print("\n" + "="*50 + "\nINIZIO TEST FINALE DELLA PIPELINE RAG\n" + "="*50)
 

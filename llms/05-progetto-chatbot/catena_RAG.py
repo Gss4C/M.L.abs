@@ -1,40 +1,29 @@
 import os
 from dotenv import load_dotenv 
 from langchain_community.vectorstores import FAISS
-#from langchain_groq import ChatGroq
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 from langchain_huggingface import ChatHuggingFace, HuggingFaceEmbeddings, HuggingFaceEndpoint
-#from getpass import getpass
 
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
-# Configurazione della Chiave API di OpenAI
-# Carichiamo le variabili d'ambiente dal file .env
 load_dotenv() 
-
-# Controllo di sicurezza per la chiave API
 if "HUGGINGFACEHUB_API_TOKEN" not in os.environ or not os.environ["HUGGINGFACEHUB_API_TOKEN"]:
     print("ERRORE: La variabile d'ambiente HUGGINGFACEHUB_API_TOKEN non è stata impostata o è vuota.")
-    print("Assicurati di avere un file .env nella stessa cartella dello script con il contenuto: OPENAI_API_KEY='la-tua-chiave'")
     exit()
-
-print("Chiave API di Groq trovata tramite file .env")
+print("Chiave API di HuggingfaceHub trovata tramite file .env")
 
 # Creazione del Retriever
-# In una vera applicazione, questo verrebbe caricato da un file.
-print("\n--- Sto creando la Knowledge Base e il Retriever ---")
 knowledge_base_texts = [
     "Il reset della password per l'account utente si effettua tramite il link 'Password dimenticata?' presente nella pagina di login. Una volta cliccato, l'utente dovrà inserire l'indirizzo email associato al proprio account.",
     "Dopo aver inserito l'email, il sistema invierà un messaggio di posta elettronica contenente un link sicuro e valido per 60 minuti. Cliccando su quel link, l'utente potrà impostare una nuova password.",
     "La nuova password deve essere lunga almeno 8 caratteri e contenere almeno una lettera maiuscola, un numero e un simbolo speciale (es. !, @, #, $). Non è possibile riutilizzare una delle ultime 5 password.",
     "L'assistenza clienti è disponibile via chat sul sito dalle 9:00 alle 18:00 dal lunedì al venerdì. Per problemi urgenti fuori orario, è possibile aprire un ticket via email all'indirizzo support@examplecorp.com."
 ]
-
 documents        = [Document(page_content=text) for text in knowledge_base_texts]
 text_splitter    = RecursiveCharacterTextSplitter(
     chunk_size    = 500, 
@@ -76,25 +65,17 @@ print("Prompt Template creato con successo.")
 
 # Inizializzare l'LLM
 print("\n--- Sto inizializzando il modello LLM... ---")
-'''
-llm = ChatHuggingFace(
-    model_name   = "deepseek-ai/DeepSeek-R1-0528", 
-    temperature  = 0
-)
-'''
-#os.environ["HUGGINGFACEHUB_API_TOKEN"] = getpass("Enter your Hugging Face API key: ")
 model = HuggingFaceEndpoint(
-    repo_id="moonshotai/Kimi-K2.6",
+    repo_id                  = "moonshotai/Kimi-K2.6",
     huggingfacehub_api_token = os.environ["HUGGINGFACEHUB_API_TOKEN"] ,
-    task="text-generation",
-    max_new_tokens=512,
-    do_sample=False,
-    repetition_penalty=1.03,
-    provider="auto",  # let Hugging Face choose the best provider for you
+    task                     = "text-generation",
+    max_new_tokens           = 512,
+    do_sample                = False,
+    repetition_penalty       = 1.03,
+    provider                 = "auto"
 )
 
 llm = ChatHuggingFace(llm=model)
-
 print(f"Modello LLM ({llm.model_id}) inizializzato.")
 
 # Costruire ed Eseguire la Catena RAG
@@ -108,7 +89,7 @@ rag_chain = (
     | llm
     | StrOutputParser()
 )
-print("Catena RAG pronta per l'uso!")
+print("Catena RAG pronta per l'uso")
 
 # Test della Catena RAG 
 print("\n" + "="*50)
