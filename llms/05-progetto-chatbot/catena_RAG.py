@@ -27,7 +27,7 @@ print("Chiave API di Groq trovata tramite file .env")
 
 # Creazione del Retriever
 # In una vera applicazione, questo verrebbe caricato da un file.
-print("\n--- Sto creando la Knowledge Base e il Retriever... ---")
+print("\n--- Sto creando la Knowledge Base e il Retriever ---")
 knowledge_base_texts = [
     "Il reset della password per l'account utente si effettua tramite il link 'Password dimenticata?' presente nella pagina di login. Una volta cliccato, l'utente dovrà inserire l'indirizzo email associato al proprio account.",
     "Dopo aver inserito l'email, il sistema invierà un messaggio di posta elettronica contenente un link sicuro e valido per 60 minuti. Cliccando su quel link, l'utente potrà impostare una nuova password.",
